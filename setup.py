@@ -12,7 +12,10 @@ setup(
     packages=find_packages("src"),
     package_dir={"": "src"},
     url="https://github.com/oskardotglobal/node-chatgpt-api.py",
-    install_requires=subprocess.check_output(["pip", "freeze"]).decode().split("\n"),
+    install_requires=[
+        "nodejs-bin==18.4.0a4",
+        "requests==2.28.2"
+    ],
     long_description=open("README.md", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
 )
