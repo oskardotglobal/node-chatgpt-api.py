@@ -1,25 +1,26 @@
 class Response:
-    error: str | None
-    status: bool
+    error: str | bool
 
     response: str | None
     conversationId: str | None
-    messageId: str | None
     conversationSignature: str | None
     clientId: str | None
     invocationId: str | None
     details: str | None
 
     def __init__(self, raw_response):
-        self.error = raw_response["error"]
-        self.status = bool(self.error)
+        self.error = False
 
-        if not self.status:
+        try:
+            self.error = raw_response["error"]
+        except KeyError:
+            pass
+
+        if self.error:
             return
 
         self.response = raw_response["response"]
         self.conversationId = raw_response["conversationId"]
-        self.messageId = raw_response["messageId"]
         self.conversationSignature = raw_response["conversationSignature"]
         self.clientId = raw_response["clientId"]
         self.invocationId = raw_response["invocationId"]
@@ -31,4 +32,11 @@ class BingResponse(Response):
 
     def __init__(self, raw_response):
         super().__init__(raw_response)
-        self.jailbreakConversationId = raw_response["jailbreakConversationId"]
+
+        if self.error:
+            return
+
+        try:
+            self.jailbreakConversationId = raw_response["jailbreakConversationId"]
+        except KeyError:
+            pass

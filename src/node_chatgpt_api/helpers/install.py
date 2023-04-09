@@ -1,7 +1,6 @@
 import os
 import shutil
 from tempfile import gettempdir
-from pathlib import Path
 from nodejs import npm, node
 from .log import critical, err, info, execute
 
@@ -32,9 +31,5 @@ def _start_api_server(settings_path: str):
     _setup_api_server()
 
     os.chdir(server_dir)
-    print(">", "npm start --settings=" + settings_path)
-    node.call(["bin/server.js", "--settings=" + settings_path])
-
-
-if __name__ == "__main__":
-    start_api_server(os.path.join(Path(os.getcwd()).parent.parent.parent.absolute(), "settings.example.js"))
+    print(">", "node bin/server.js --settings=" + settings_path)
+    node.Popen(["bin/server.js", "--settings=" + settings_path])

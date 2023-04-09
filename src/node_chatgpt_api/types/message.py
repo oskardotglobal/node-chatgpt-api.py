@@ -15,14 +15,17 @@ class Message:
         self.invocationId = kwargs.get("invocationId")
 
     def to_dict(self):
-        return {
+        data = {
             "message": self.message,
             "conversationId": self.conversationId,
             "parentMessageId": self.parentMessageId,
             "conversationSignature": self.conversationSignature,
             "clientId": self.clientId,
             "invocationId": self.invocationId,
+            "stream": False
         }
+
+        return {x: y for x, y in data.items() if y is not None}
 
 
 class BingMessage(Message):
