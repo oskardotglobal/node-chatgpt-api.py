@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name="node_chatgpt_api",
-    version="1.0.0",
+    version="1.0.1",
     license="MIT",
     author="Oskar Manhart",
     author_email="me@oskar.global",
