@@ -33,4 +33,13 @@ class BingMessage(Message):
 
     def __init__(self, message, **kwargs):
         super().__init__(message, **kwargs)
+
         self.jailbreakConversationId = kwargs.get("jailbreakConversationId")
+
+    def to_dict(self):
+        data = super().to_dict()
+
+        if self.jailbreakConversationId:
+            data["jailbreakConversationId"] = self.jailbreakConversationId
+
+        return data

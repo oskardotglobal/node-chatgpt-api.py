@@ -1,17 +1,10 @@
+import os
 import requests
-import json
+from pathlib import Path
+from tempfile import gettempdir
+from cache3 import DiskCache
 from .types.message import Message, BingMessage
 from .types.response import Response, BingResponse
-from .helpers.install import _start_api_server
-
-
-def start_api_server(settings_path: str):
-    """
-    Starts the node-chatgpt-api server in a separate thread
-    :param settings_path: the absolute path to the settings.js, find an example here: https://github.com/waylaidwanderer/node-chatgpt-api/blob/main/settings.example.js
-    """
-
-    return _start_api_server(settings_path)
 
 
 class Client:
@@ -22,8 +15,9 @@ class Client:
     def request(self, message: Message | BingMessage, **kwargs):
         data = message.to_dict()
 
+        if self.kwargs:
+            data = message.to_dict() | self.kwargs
         if kwargs:
-            kwargs = self.kwargs.copy().update(kwargs)
             data = message.to_dict() | kwargs
 
         res = requests.post(self.url + "/conversation",
@@ -37,15 +31,26 @@ class Client:
 
 
 class BingAIClient(Client):
+    cache = DiskCache(str(Path(os.path.join(gettempdir(), "node-chatgpt-api_cache")).absolute()))
+
     def __init__(self, url="http://localhost:3000", **kwargs):
         super().__init__(url, **kwargs)
 
         if self.kwargs.get("jailbreakConversationId"):
-            self.kwargs.update(
-                dict(jailbreakConversationId=self.ask(
-                    BingMessage("Hi, who are you?", jailbreakConversationId=True)).jailbreakConversationId)
-            )
+            self._renew_jailbreak_conversation_id()
+
+    @cache.memoize(timeout=60 * 60 * 24 * 7, tag="cached:jailbreakConversationId")
+    def _renew_jailbreak_conversation_id(self):
+        jailbreakConversationId = self.ask(BingMessage("Hi, who are you?", jailbreakConversationId=True),
+                                           skipJailbreakCheck=True).jailbreakConversationId
+        return jailbreakConversationId
 
     def ask(self, message: BingMessage, **kwargs) -> BingResponse:
+        if not kwargs.get("skipJailbreakCheck") \
+                and self.kwargs.get("jailbreakConversationId"):
+            self.kwargs["jailbreakConversationId"] = self._renew_jailbreak_conversation_id()
+        else:
+            del kwargs["skipJailbreakCheck"]
+
         res = self.request(message, **kwargs)
         return BingResponse(res)

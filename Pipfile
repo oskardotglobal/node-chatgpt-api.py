@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 requests = "2.28.2"
 nodejs-bin = "18.4.0a4"
+cache3 = "0.4.2"
 
 [dev-packages]
 build = "0.10.0"

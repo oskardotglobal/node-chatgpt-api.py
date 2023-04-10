@@ -1,11 +1,13 @@
 import os
 import shutil
 from tempfile import gettempdir
+from subprocess import Popen
 from nodejs import npm, node
 from .log import critical, err, info, execute
 
 tmp_dir = gettempdir()
 server_dir = os.path.join(tmp_dir, "node-chatgpt-api")
+process: Popen | None = None
 
 
 def _setup_api_server():
@@ -27,9 +29,26 @@ def _setup_api_server():
         os.chdir(curr)
 
 
-def _start_api_server(settings_path: str):
+def start_api_server(settings_path: str):
+    """
+        Starts the node-chatgpt-api server in a separate thread
+        :param settings_path: the absolute path to the settings.js, find an example here: https://github.com/waylaidwanderer/node-chatgpt-api/blob/main/settings.example.js
+    """
     _setup_api_server()
 
     os.chdir(server_dir)
     print(">", "node bin/server.js --settings=" + settings_path)
-    node.Popen(["bin/server.js", "--settings=" + settings_path])
+
+    global process
+    process = node.Popen(["bin/server.js", "--settings=" + settings_path])
+
+
+def stop_api_server():
+    """
+        Stops the node-chatgpt-api server.
+        This is important because unless this is executed, the server keeps running.
+        On Windows, this will instantly terminate the process, whilst on Linux it will properly shut down.
+    """
+
+    global process
+    process.kill()
