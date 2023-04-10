@@ -30,3 +30,7 @@ install:
 package:
 	make build
 	make install
+
+publish:
+	make package
+	twine upload dist/*
